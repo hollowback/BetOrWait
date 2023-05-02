@@ -44,7 +44,7 @@ namespace Bow2.FA
             try
             {
                 this.log = log;
-                await DownloadEndpointsAsync();
+                await ProcessEndpointsAsync();
             }
             catch (Exception ex)
             {
@@ -52,9 +52,9 @@ namespace Bow2.FA
             }
         }
 
-        protected async Task DownloadEndpointsAsync()
+        protected async Task ProcessEndpointsAsync()
         {
-            log.LogInformation($"Checking downloads... at: {DateTime.Now}");
+            log.LogInformation($"Checking endpoints... at: {DateTime.Now}");
             var endpointsToScrape = context.Endpoint.Where(w => w.State != (int)EpState.Finished).ToList();
 
             foreach (var endpoint in endpointsToScrape)
