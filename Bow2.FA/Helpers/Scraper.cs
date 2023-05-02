@@ -19,7 +19,14 @@ namespace Bow2.FA.Helpers
                 //{
                 //    Path = Path.GetTempPath()
                 //});
-                //await browserFetcher.DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
+
+                if (Environment.GetEnvironmentVariable("AzureWebJobsScriptRoot") != null)
+                {
+                    // Running locally
+                    await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
+                    Console.WriteLine("Function app running locally");
+                }
+
                 Debug.WriteLine("browser launchasync...");
                 browser = await Puppeteer.LaunchAsync(new LaunchOptions
                 {
@@ -35,8 +42,8 @@ namespace Bow2.FA.Helpers
                 Debug.WriteLine("browser pagesasync...");
                 var page = (await browser.PagesAsync()).First();
                 Debug.WriteLine("browser goto...");
-                await page.GoToAsync("https://www.livesport.cz/fotbal/cesko/fortuna-liga-2018-2019/vysledky/");
-                var wfso = new WaitForSelectorOptions() { Timeout = 3000, Visible = false };
+                await page.GoToAsync(endpoint);
+                var wfso = new WaitForSelectorOptions() { Timeout = 3000, Visible = true };
                 var button = await page.WaitForSelectorAsync("#onetrust-accept-btn-handler", wfso);
                 if (button != null)
                     Debug.WriteLine("button click ...onetrust");
@@ -60,8 +67,9 @@ namespace Bow2.FA.Helpers
                     // uz neni dalsi link "zobrazit dalsi"
                 }
 
-                var content = await page.GetContentAsync();
-                Debug.WriteLine($"content...{content}");
+                var element = await page.WaitForSelectorAsync("div.event--results");
+                var innerContent = await element.GetPropertyAsync("innerHTML");
+                var content = (await innerContent.JsonValueAsync()).ToString();
                 return content;
             }
             catch (Exception ex)

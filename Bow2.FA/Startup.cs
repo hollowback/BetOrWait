@@ -28,19 +28,23 @@ namespace Bow2.FA
     public class TimerRun
     {
         private readonly BowContext context;
+        private ILogger log;
         public TimerRun(BowContext context)
         {
             this.context = context;
         }
 
         [FunctionName("TimerRun")]
-        public async Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)] TimerInfo timer, ILogger log)
+        public async Task Run([TimerTrigger("0 */5 * * * *", 
+#if DEBUG
+     RunOnStartup= true
+#endif
+            )] TimerInfo timer, ILogger log)
         {
             try
             {
-                log.LogInformation($"Timer trigger function executed at: {DateTime.Now}, Timer: {timer}");
-
-                await ProcessEndpointsAsync(log);
+                this.log = log;
+                await DownloadEndpointsAsync();
             }
             catch (Exception ex)
             {
@@ -48,26 +52,25 @@ namespace Bow2.FA
             }
         }
 
-        protected async Task ProcessEndpointsAsync(ILogger log)
+        protected async Task DownloadEndpointsAsync()
         {
-            var endpointsToScrape = context.Endpoint.Where(w => w.State == (int)EpState.Empty).ToList();
+            log.LogInformation($"Checking downloads... at: {DateTime.Now}");
+            var endpointsToScrape = context.Endpoint.Where(w => w.State != (int)EpState.Finished).ToList();
 
             foreach (var endpoint in endpointsToScrape)
             {
-                var content = await Scraper.ReadAsync(endpoint.Url);
-                log.LogInformation($"Content: {content}");
-                Debug.WriteLine("after read...");
-                if (content != null)
+                var data = await Scraper.ReadAsync(endpoint.Url);
+                var differ = data != endpoint.Data;
+                log.LogInformation($"{endpoint.Url} read end, data differs? {differ}");
+                if (differ && data != null)
                 {
-                    Debug.WriteLine($"entity set...{endpoint.Id}");
-
-                    endpoint.Data = content;
+                    endpoint.Data = data;
+                    endpoint.Lastmodified = DateTime.UtcNow;
                     endpoint.State = (int)EpState.Ongoing;
                 }
             }
-            Debug.WriteLine("before save...");
             await context.SaveChangesAsync();
-            Debug.WriteLine("FINISHED...");
+            log.LogInformation($"Download finished... at: {DateTime.Now}");
         }
     }
 }

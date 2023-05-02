@@ -17,9 +17,21 @@
       {
          "Name": "[dbo].[Endpoint]",
          "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[League]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Match]",
+         "ObjectType": 0
+      },
+      {
+         "Name": "[dbo].[Team]",
+         "ObjectType": 0
       }
    ],
-   "UiHint": "devon.bow.dbo",
+   "UiHint": "cesk.wineDbDev",
    "UncountableWords": null,
    "UseBoolPropertiesWithoutDefaultSql": false,
    "UseDatabaseNames": false,

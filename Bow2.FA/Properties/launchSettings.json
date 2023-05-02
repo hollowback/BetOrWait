@@ -2,7 +2,7 @@
   "profiles": {
     "Bow2_FA": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7021"
+      "commandLineArgs": "--port 7021 --verbose"
     },
     "Docker": {
       "commandName": "Docker",

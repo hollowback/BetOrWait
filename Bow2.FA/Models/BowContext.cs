@@ -19,9 +19,14 @@ namespace Bow2.FA.Models
         }
 
         public virtual DbSet<Endpoint> Endpoint { get; set; }
+        public virtual DbSet<League> League { get; set; }
+        public virtual DbSet<Match> Match { get; set; }
+        public virtual DbSet<Team> Team { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.UseCollation("Czech_CI_AS");
+
             modelBuilder.Entity<Endpoint>(entity =>
             {
                 entity.Property(e => e.Id).HasColumnName("id");
@@ -39,6 +44,92 @@ namespace Bow2.FA.Models
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("url");
+            });
+
+            modelBuilder.Entity<League>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Country)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("country");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("name");
+
+                entity.Property(e => e.Sport).HasColumnName("sport");
+
+                entity.Property(e => e.YearFrom).HasColumnName("year_from");
+
+                entity.Property(e => e.YearTo).HasColumnName("year_to");
+            });
+
+            modelBuilder.Entity<Match>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Datestamp)
+                    .HasColumnType("datetime")
+                    .HasColumnName("datestamp");
+
+                entity.Property(e => e.EventRound)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("event_round");
+
+                entity.Property(e => e.EventTitle)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("event_title");
+
+                entity.Property(e => e.IdLeague).HasColumnName("id_league");
+
+                entity.Property(e => e.IdTeam1).HasColumnName("id_team1");
+
+                entity.Property(e => e.IdTeam2).HasColumnName("id_team2");
+
+                entity.Property(e => e.Pts1).HasColumnName("pts1");
+
+                entity.Property(e => e.Pts2).HasColumnName("pts2");
+
+                entity.HasOne(d => d.IdLeagueNavigation)
+                    .WithMany(p => p.Match)
+                    .HasForeignKey(d => d.IdLeague)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Match_League");
+
+                entity.HasOne(d => d.IdTeam1Navigation)
+                    .WithMany(p => p.MatchIdTeam1Navigation)
+                    .HasForeignKey(d => d.IdTeam1)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Match_Team1");
+
+                entity.HasOne(d => d.IdTeam2Navigation)
+                    .WithMany(p => p.MatchIdTeam2Navigation)
+                    .HasForeignKey(d => d.IdTeam2)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Match_Team2");
+            });
+
+            modelBuilder.Entity<Team>(entity =>
+            {
+                entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Code)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("code");
+
+                entity.Property(e => e.Name)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("name");
             });
 
             OnModelCreatingPartial(modelBuilder);
