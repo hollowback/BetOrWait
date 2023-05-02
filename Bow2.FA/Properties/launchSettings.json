@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "Bow2_FA": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7021"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 34884,
+      "useSSL": false
+    }
+  }
+}
