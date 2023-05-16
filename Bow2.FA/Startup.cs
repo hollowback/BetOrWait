@@ -10,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Bow2.FA;
-using System.Diagnostics;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 namespace Bow2.FA
@@ -44,7 +43,8 @@ namespace Bow2.FA
             try
             {
                 this.log = log;
-                await ProcessEndpointsAsync();
+                await DownloadEndpointsAsync();
+                await ParseHTMLDataAsync();
             }
             catch (Exception ex)
             {
@@ -52,25 +52,68 @@ namespace Bow2.FA
             }
         }
 
-        protected async Task ProcessEndpointsAsync()
+        protected async Task DownloadEndpointsAsync()
         {
-            log.LogInformation($"Checking endpoints... at: {DateTime.Now}");
-            var endpointsToScrape = context.Endpoint.Where(w => w.State != (int)EpState.Finished).ToList();
+            var endpointsToScrape = await context.Endpoint.Where(w => w.State == (int)EState.ToDownload).ToListAsync();
+            log.LogInformation($"Downloading endpoints... at: {DateTime.Now}, {endpointsToScrape.Count}");
 
             foreach (var endpoint in endpointsToScrape)
             {
                 var data = await Scraper.ReadAsync(endpoint.Url);
-                var differ = data != endpoint.Data;
-                log.LogInformation($"{endpoint.Url} read end, data differs? {differ}");
+                var differ = data.Length > (endpoint.Data?.Length ?? 0);
+                log.LogInformation($"{endpoint.Url} read end, data differs? {differ}, {data.Length} vs {endpoint.Data?.Length ?? 0}");
                 if (differ && data != null)
                 {
                     endpoint.Data = data;
                     endpoint.Lastmodified = DateTime.UtcNow;
-                    endpoint.State = (int)EpState.Ongoing;
+                }
+                if (differ || endpoint.Data.Length > 0)
+                {
+                    endpoint.State = (int)EState.ToParse;
                 }
             }
             await context.SaveChangesAsync();
-            log.LogInformation($"Download finished... at: {DateTime.Now}");
+        }
+
+        protected async Task ParseHTMLDataAsync()
+        {
+            var endpointsToScrape = await context.Endpoint.Where(w => w.State == (int)EState.ToParse).ToListAsync();
+            log.LogInformation($"Parsing html... at: {DateTime.Now}, {endpointsToScrape.Count}");
+
+            foreach (var endpoint in endpointsToScrape)
+            {
+                // liga
+                var league = HtmlParser.GetLeague(endpoint.Url);
+                var dbLeague = await context.League.FirstOrDefaultAsync(f => f.Name == league.Name && f.Sport == league.Sport && f.Country == league.Country) ?? league;
+
+                // teamy
+                var dbTeams = await context.Team.Where(w => w.Sport == league.Sport && w.Country == league.Country).ToListAsync();
+
+                // zapasy
+                var dbMatches = await context.Match.Where(w => w.IdLeague == dbLeague.Id).AsTracking().ToListAsync();
+                var origCodes = dbMatches.Select(s => s.Code).ToList();
+
+                dbMatches = HtmlParser.GetMatches(endpoint, dbMatches, dbTeams, dbLeague);
+                if (dbMatches != null)
+                {
+                    var newCodes = dbMatches.Select(s => s.Code).ToList();
+                    log.LogInformation($"Parsing matches finished, found... {newCodes.Count}");
+
+                    // odstranit neplatne zaznamy pokud vubec jsou
+                    context.RemoveRange(dbMatches.Where(w => !w.IsModified));
+
+                    // pridat nove zaznamy, ktere nejsou v puvodnim
+                    await context.AddRangeAsync(dbMatches.Where(w => !origCodes.Contains(w.Code)));
+                    
+                    // updatovat jiz existujici zaznamy, nemusime protoze kolekce je AsTracking()
+                    //context.UpdateRange(dbMatches.Where(w => origCodes.Contains(w.Code)));
+
+                    endpoint.State = (int)EState.ToDownload;
+                }
+            }
+
+            await context.SaveChangesAsync();
+            log.LogInformation($"Parsing finished... at: {DateTime.Now}");
         }
     }
 }

@@ -16,6 +16,8 @@ namespace Bow2.FA.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public string Code { get; set; }
+        public short? Sport { get; set; }
+        public string Country { get; set; }
 
         public virtual ICollection<Match> MatchIdTeam1Navigation { get; set; }
         public virtual ICollection<Match> MatchIdTeam2Navigation { get; set; }

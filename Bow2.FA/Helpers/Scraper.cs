@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Reflection.Metadata;
+using Microsoft.WindowsAzure.Storage.Blob;
 
 namespace Bow2.FA.Helpers
 {
@@ -19,15 +20,14 @@ namespace Bow2.FA.Helpers
                 //{
                 //    Path = Path.GetTempPath()
                 //});
-
-                if (Environment.GetEnvironmentVariable("AzureWebJobsScriptRoot") != null)
+                var isLocally = Environment.GetEnvironmentVariable("AzureWebJobsScriptRoot") != null;
+                if (isLocally)
                 {
                     // Running locally
                     await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
-                    Console.WriteLine("Function app running locally");
                 }
 
-                Debug.WriteLine("browser launchasync...");
+                Debug.WriteLine($"browser launchasync {(isLocally ? "locally" : "in cloud")}...");
                 browser = await Puppeteer.LaunchAsync(new LaunchOptions
                 {
                     Headless = true,
@@ -41,6 +41,7 @@ namespace Bow2.FA.Helpers
 
                 Debug.WriteLine("browser pagesasync...");
                 var page = (await browser.PagesAsync()).First();
+                await page.SetCacheEnabledAsync(false);
                 Debug.WriteLine("browser goto...");
                 await page.GoToAsync(endpoint);
                 var wfso = new WaitForSelectorOptions() { Timeout = 3000, Visible = true };
@@ -69,7 +70,7 @@ namespace Bow2.FA.Helpers
 
                 var element = await page.WaitForSelectorAsync("div.event--results");
                 var innerContent = await element.GetPropertyAsync("innerHTML");
-                var content = (await innerContent.JsonValueAsync()).ToString();
+                var content = $"<html><body>{await innerContent.JsonValueAsync()}</body></html>";
                 return content;
             }
             catch (Exception ex)

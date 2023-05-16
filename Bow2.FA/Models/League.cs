@@ -14,8 +14,6 @@ namespace Bow2.FA.Models
 
         public int Id { get; set; }
         public string Name { get; set; }
-        public short? YearFrom { get; set; }
-        public short? YearTo { get; set; }
         public string Country { get; set; }
         public short Sport { get; set; }
 

@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bow2_FA", "Bow2.FA\Bow2_FA.csproj", "{54889BBB-77C8-4C23-8947-10689E2FDAF6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bow2.FA", "Bow2.FA\Bow2.FA.csproj", "{54889BBB-77C8-4C23-8947-10689E2FDAF6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

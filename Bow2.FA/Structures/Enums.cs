@@ -1,9 +1,15 @@
 ﻿namespace Bow2.FA.Structures
 {
-    internal enum EpState
+    internal enum EState
     {
-        Empty = 0,
-        Ongoing = 1,
+        ToDownload = 0,
+        ToParse = 1,
         Finished = 2
+    }
+
+    internal enum ESport
+    {
+        Fotbal = 1,
+        Hokej = 2
     }
 }

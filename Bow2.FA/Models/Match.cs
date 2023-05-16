@@ -8,14 +8,21 @@ namespace Bow2.FA.Models
     public partial class Match
     {
         public int Id { get; set; }
+        public string Code { get; set; }
         public int IdTeam1 { get; set; }
         public int IdTeam2 { get; set; }
         public int IdLeague { get; set; }
         public string EventRound { get; set; }
-        public string EventTitle { get; set; }
+        public string EventHeader { get; set; }
         public DateTime Datestamp { get; set; }
-        public short? Pts1 { get; set; }
-        public short? Pts2 { get; set; }
+        public short? Pts1Fulltime { get; set; }
+        public short? Pts2Fulltime { get; set; }
+        public short? Pts11 { get; set; }
+        public short? Pts12 { get; set; }
+        public short? Pts13 { get; set; }
+        public short? Pts21 { get; set; }
+        public short? Pts22 { get; set; }
+        public short? Pts23 { get; set; }
 
         public virtual League IdLeagueNavigation { get; set; }
         public virtual Team IdTeam1Navigation { get; set; }

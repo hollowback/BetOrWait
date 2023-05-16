@@ -62,29 +62,34 @@ namespace Bow2.FA.Models
                     .HasColumnName("name");
 
                 entity.Property(e => e.Sport).HasColumnName("sport");
-
-                entity.Property(e => e.YearFrom).HasColumnName("year_from");
-
-                entity.Property(e => e.YearTo).HasColumnName("year_to");
             });
 
             modelBuilder.Entity<Match>(entity =>
             {
+                entity.HasIndex(e => e.Code, "IX_Match_Code")
+                    .IsUnique();
+
                 entity.Property(e => e.Id).HasColumnName("id");
+
+                entity.Property(e => e.Code)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .IsUnicode(false)
+                    .HasColumnName("code");
 
                 entity.Property(e => e.Datestamp)
                     .HasColumnType("datetime")
                     .HasColumnName("datestamp");
 
+                entity.Property(e => e.EventHeader)
+                    .HasMaxLength(255)
+                    .IsUnicode(false)
+                    .HasColumnName("event_header");
+
                 entity.Property(e => e.EventRound)
                     .HasMaxLength(255)
                     .IsUnicode(false)
                     .HasColumnName("event_round");
-
-                entity.Property(e => e.EventTitle)
-                    .HasMaxLength(255)
-                    .IsUnicode(false)
-                    .HasColumnName("event_title");
 
                 entity.Property(e => e.IdLeague).HasColumnName("id_league");
 
@@ -92,9 +97,21 @@ namespace Bow2.FA.Models
 
                 entity.Property(e => e.IdTeam2).HasColumnName("id_team2");
 
-                entity.Property(e => e.Pts1).HasColumnName("pts1");
+                entity.Property(e => e.Pts11).HasColumnName("pts1_1");
 
-                entity.Property(e => e.Pts2).HasColumnName("pts2");
+                entity.Property(e => e.Pts12).HasColumnName("pts1_2");
+
+                entity.Property(e => e.Pts13).HasColumnName("pts1_3");
+
+                entity.Property(e => e.Pts1Fulltime).HasColumnName("pts1_fulltime");
+
+                entity.Property(e => e.Pts21).HasColumnName("pts2_1");
+
+                entity.Property(e => e.Pts22).HasColumnName("pts2_2");
+
+                entity.Property(e => e.Pts23).HasColumnName("pts2_3");
+
+                entity.Property(e => e.Pts2Fulltime).HasColumnName("pts2_fulltime");
 
                 entity.HasOne(d => d.IdLeagueNavigation)
                     .WithMany(p => p.Match)
@@ -125,11 +142,18 @@ namespace Bow2.FA.Models
                     .IsUnicode(false)
                     .HasColumnName("code");
 
+                entity.Property(e => e.Country)
+                    .HasMaxLength(100)
+                    .IsUnicode(false)
+                    .HasColumnName("country");
+
                 entity.Property(e => e.Name)
                     .IsRequired()
                     .HasMaxLength(100)
                     .IsUnicode(false)
                     .HasColumnName("name");
+
+                entity.Property(e => e.Sport).HasColumnName("sport");
             });
 
             OnModelCreatingPartial(modelBuilder);
