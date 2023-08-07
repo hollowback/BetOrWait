@@ -31,11 +31,11 @@ namespace Bow2.FA.Helpers
                 browser = await Puppeteer.LaunchAsync(new LaunchOptions
                 {
                     Headless = true,
-                    Args = new[] {
-                      "--disable-gpu",
-                      "--disable-dev-shm-usage",
-                      "--disable-setuid-sandbox",
-                      "--no-sandbox"}
+                    //Args = new[] {
+                    //  "--disable-gpu",
+                    //  "--disable-dev-shm-usage",
+                    //  "--disable-setuid-sandbox",
+                    //  "--no-sandbox"}
                     //ExecutablePath = browserFetcher.RevisionInfo(BrowserFetcher.DefaultChromiumRevision.ToString()).ExecutablePath
                 });
 
@@ -48,25 +48,34 @@ namespace Bow2.FA.Helpers
                 var button = await page.WaitForSelectorAsync("#onetrust-accept-btn-handler", wfso);
                 if (button != null)
                     Debug.WriteLine("button click ...onetrust");
-                    await button.ClickAsync(); 
+                await button.ClickAsync();
 
-                try
+                var cntr = 0;
+                IElementHandle a = null;
+                do
                 {
-                    Debug.WriteLine("page waitforselector...");
-                    var a = await page.WaitForSelectorAsync("a.event__more", wfso);
-                    while (a != null)
+                    try
                     {
-                        Debug.WriteLine("page waitforselector...found");
-                        //await button.ScrollIntoViewIfNeededAsync();
-                        await page.ClickAsync(".event__more");
+                        Debug.Write($"{++cntr}. page waitforselector...");
                         a = await page.WaitForSelectorAsync("a.event__more", wfso);
+                        if (a != null)
+                        {
+                            Debug.WriteLine("found");
+                            //await button.ScrollIntoViewIfNeededAsync();
+                            await page.ClickAsync(".event__more");
+                        }
                     }
-                }
-                catch (Exception)
-                {
-                    Debug.WriteLine("page nomorelinks...");
-                    // uz neni dalsi link "zobrazit dalsi"
-                }
+                    catch (WaitTaskTimeoutException)
+                    {
+                        // uz neni dalsi link "zobrazit dalsi"
+                        Debug.WriteLine($"page nomorelinks...");
+                        break;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                } while (a != null || cntr < 30);
+
 
                 var element = await page.WaitForSelectorAsync("div.event--results");
                 var innerContent = await element.GetPropertyAsync("innerHTML");
