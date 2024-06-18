@@ -128,7 +128,7 @@ namespace Bow2.FA.Helpers
 
         private static string FindTeamCode(HtmlNode node, string locationPattern)
         {
-            var htmlString = node.ChildNodes.First(f => f.HasClass($"event__logo--{locationPattern}")).OuterHtml;
+            var htmlString = node.ChildNodes.First(f => f.HasClass($"event__{locationPattern}Participant")).OuterHtml;
             string pattern = @"src=""([^""]+)\/([^\/]+)\.png""";
             var mtch = Regex.Match(htmlString, pattern);
             if (!mtch.Success)
@@ -138,7 +138,7 @@ namespace Bow2.FA.Helpers
 
         private static string FindTeamName(HtmlNode node, string locationPattern)
         {
-            return node.ChildNodes.First(f => f.HasClass($"event__participant--{locationPattern}")).InnerText;
+            return node.ChildNodes.First(f => f.HasClass($"event__{locationPattern}Participant")).InnerText;
         }
 
         private static short? FindFullScore(HtmlNode node, string locationPattern)
@@ -150,7 +150,7 @@ namespace Bow2.FA.Helpers
 
         private static short? FindPartScore(HtmlNode node, string locationPattern, short partNum)
         {
-            var part = node.ChildNodes.First(f => f.HasClass($"event__part--{locationPattern}") && f.HasClass($"event__part--{partNum}")).InnerText;
+            var part = node.ChildNodes.FirstOrDefault(f => f.HasClass($"event__part--{locationPattern}") && f.HasClass($"event__part--{partNum}"))?.InnerText;
             if (!ExtractPartScore(part, out short score))
                 return null;
             return score;
@@ -158,9 +158,11 @@ namespace Bow2.FA.Helpers
 
         private static bool ExtractPartScore(string input, out short score)
         {
+            score = 0;
+            if (string.IsNullOrEmpty(input))
+                return false;
             string pattern = @"\((\d+)\)";
             var match = Regex.Match(input, pattern);
-            score = 0;
 
             if (match.Success)
             {
@@ -213,8 +215,8 @@ namespace Bow2.FA.Helpers
 
         private static string FindEventHeader(HtmlNode node)
         {
-            var round = FindNearestSiblingByClassName(node, "event__header");
-            return round.Descendants().First(w => w.HasClass("event__title--name")).InnerText;
+            var header = FindNearestSiblingByClassName(node, "wclLeagueHeader");
+            return header.Descendants().First(w => w.HasClass("event__titleInfo")).InnerText;
         }
 
         private static HtmlNode FindNearestSiblingByClassName(HtmlNode node, string className)

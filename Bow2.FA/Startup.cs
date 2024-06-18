@@ -82,6 +82,7 @@ namespace Bow2.FA
 
             foreach (var endpoint in endpointsToScrape)
             {
+                log.LogInformation($"Processing {endpoint.Url}...");
                 // liga
                 var league = HtmlParser.GetLeague(endpoint.Url);
                 var dbLeague = await context.League.FirstOrDefaultAsync(f => f.Name == league.Name && f.Sport == league.Sport && f.Country == league.Country) ?? league;
