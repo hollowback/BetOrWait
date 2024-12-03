@@ -59,6 +59,7 @@ namespace Bow2.FA
 
             foreach (var endpoint in endpointsToScrape)
             {
+                log.LogInformation($"Endpoint: {endpoint.Url}");
                 var data = await Scraper.ReadAsync(endpoint.Url);
                 var differ = data.Length > (endpoint.Data?.Length ?? 0);
                 log.LogInformation($"{endpoint.Url} read end, data differs? {differ}, {data.Length} vs {endpoint.Data?.Length ?? 0}");

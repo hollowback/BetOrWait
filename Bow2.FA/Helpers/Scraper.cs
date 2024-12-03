@@ -6,6 +6,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 using Microsoft.WindowsAzure.Storage.Blob;
+using Microsoft.Extensions.Options;
 
 namespace Bow2.FA.Helpers
 {
@@ -16,15 +17,19 @@ namespace Bow2.FA.Helpers
             IBrowser browser = null;
             try
             {
-                //var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions
-                //{
-                //    Path = Path.GetTempPath()
-                //});
+                var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions
+                {
+                    Path = Path.GetTempPath()
+                });
                 var isLocally = Environment.GetEnvironmentVariable("AzureWebJobsScriptRoot") != null;
                 if (isLocally)
                 {
                     // Running locally
-                    await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultChromiumRevision);
+                    await browserFetcher.DownloadAsync();
+                    browser = await Puppeteer.LaunchAsync(new LaunchOptions
+                    {
+                        Headless = true
+                    });
                 }
 
                 Debug.WriteLine($"browser launchasync {(isLocally ? "locally" : "in cloud")}...");

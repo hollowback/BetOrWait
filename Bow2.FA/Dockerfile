@@ -19,7 +19,7 @@ EXPOSE 443
 
 WORKDIR /home/site/wwwroot
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 COPY ["Bow2.FA/Bow2_FA.csproj", "Bow2.FA/"]
 RUN dotnet restore "Bow2.FA/Bow2_FA.csproj"
